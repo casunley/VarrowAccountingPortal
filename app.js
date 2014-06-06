@@ -25,6 +25,17 @@ app.get('/', function(request, response) {
 	});
 });
 
+app.get('/success', function(request, response) {
+    fs.readFile('success.html', function (error, data) {
+        if(error) { 
+            console.log(error); 
+        }
+        response.writeHead(200, {'Content-Type': 'text/html', 'Content-Length': data.length});
+        response.write(data);
+        response.end();
+    });
+});
+
 app.post('/upload',function(request, response) {
 	var fstream;
     request.pipe(request.busboy);
@@ -33,7 +44,7 @@ app.post('/upload',function(request, response) {
     	fstream = fs.createWriteStream('./tehFiles/' + filename);
     	file.pipe(fstream);
     	fstream.on('close', function() {
-    		response.redirect('back');
+    		response.redirect('success');
             console.log('Uploaded to ' + fstream.path);
     	});
     });
