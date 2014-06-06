@@ -33,7 +33,7 @@ app.post('/upload',function(request, response) {
     	fstream = fs.createWriteStream('./tehFiles/' + filename);
     	file.pipe(fstream);
     	fstream.on('close', function() {
-    		response.redirect('success.html');
+    		response.redirect('back');
             console.log('Uploaded to ' + fstream.path);
     	});
     });
