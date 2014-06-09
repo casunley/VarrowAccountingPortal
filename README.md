@@ -9,8 +9,5 @@
 
 ### That's it...
 =======
-File_Upload_JS
-==============
 
-Barebones File Upload using node.js and express
 >>>>>>> e5d34309d284d33f10909113f6eb7746ffea8596
