@@ -43,7 +43,7 @@ app.post('/upload',function(request, response) {
     request.pipe(request.busboy);
     request.busboy.on('file', function(fieldname, file, filename) {
     	console.log('Uploading: ' + filename);
-    	fstream = fs.createWriteStream('./tehFiles/' + filename);
+    	fstream = fs.createWriteStream('./storedFiles/' + filename);
     	file.pipe(fstream);
     	fstream.on('close', function() {
     		response.redirect('success');
