@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="utf-8" />
-	<title>Upload your file</title>
-	<link rel="stylesheet" href="styles/mystyle.css" />	
-</head>
-<body>
-<form class="group" action="/upload" method="post" enctype="multipart/form-data">
-	<ol>
-
-		<li class="group">
-			<label for="filefield">Upload a File</label>
-			<input type="file" name="uploads" id="filefield" required accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, .csv"/>
-		</li>
-
-	</ol>
-<input type="submit" value="Upload">
-</form>
-</body>
-</html>
+    
+    <head>
+        <meta charset="utf-8" />
+        <title>Upload your file</title>
+        <link rel="stylesheet" href="styles/mystyle.css" />
+    </head>
+    
+    <body>
+        <form class="group" action="/upload" method="post" enctype="multipart/form-data">
+            <ol>
+                <li class="group">
+                    <label for="filefield">Upload a File</label>
+                    <input type="file" name="uploads" id="filefield" required accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, .csv" />
+                </li>
+            </ol>
+            <input type="submit" value="Upload">
+        </form>
+    </body>
