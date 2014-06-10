@@ -46,6 +46,11 @@ app.post('/upload',function(request, response) {
     	fstream.on('close', function() {
     		response.redirect('success');
             console.log('Uploaded to ' + fstream.path);
+
+
     	});
     });
 });
+
+
+
