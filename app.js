@@ -1,9 +1,9 @@
 /*  
-*    Super Easy File Uploader
-*   @author greed@varrow.com
-*   June 2014
-*   Use this to begin developing an understanding of the extraordinary powers of Node.js and ExpressJS!
-*/ 
+ *    Super Easy File Uploader
+ *   @author greed@varrow.com
+ *   June 2014
+ *   Use this to begin developing an understanding of the extraordinary powers of Node.js and ExpressJS!
+ */
 var fs = require('fs');
 var express = require('express');
 var app = express();
@@ -14,23 +14,29 @@ var port = 3000;
 app.listen(port);
 console.log('Server listening on port ' + port);
 
-app.get('/', function(request, response) {
-	fs.readFile('upload.html', function (error, data) {
-		if(error) { 
-            console.log(error); 
+app.get('/', function (request, response) {
+    fs.readFile('upload.html', function (error, data) {
+        if (error) {
+            console.log(error);
         }
-	    response.writeHead(200, {'Content-Type': 'text/html', 'Content-Length': data.length});
-	    response.write(data);
-    	response.end();
-	});
+        response.writeHead(200, {
+            'Content-Type': 'text/html',
+            'Content-Length': data.length
+        });
+        response.write(data);
+        response.end();
+    });
 });
 
-app.get('/success', function(request, response) {
+app.get('/success', function (request, response) {
     fs.readFile('success.html', function (error, data) {
-        if(error) { 
-            console.log(error); 
+        if (error) {
+            console.log(error);
         }
-        response.writeHead(200, {'Content-Type': 'text/html', 'Content-Length': data.length});
+        response.writeHead(200, {
+            'Content-Type': 'text/html',
+            'Content-Length': data.length
+        });
         response.write(data);
         response.end();
     });
@@ -38,19 +44,19 @@ app.get('/success', function(request, response) {
 
 //app.use("/styles", express.static(__dirname + '/styles'));
 
-app.post('/upload',function(request, response) {
-	var fstream;
+app.post('/upload', function (request, response) {
+    var fstream;
     request.pipe(request.busboy);
-    request.busboy.on('file', function(fieldname, file, filename) {
-    	console.log('Uploading: ' + filename);
-    	fstream = fs.createWriteStream('./storedFiles/' + filename);
-    	file.pipe(fstream);
-    	fstream.on('close', function() {
-    		response.redirect('success');
+    request.busboy.on('file', function (fieldname, file, filename) {
+        console.log('Uploading: ' + filename);
+        fstream = fs.createWriteStream('./storedFiles/' + filename);
+        file.pipe(fstream);
+        fstream.on('close', function () {
+            response.redirect('success');
             console.log('Uploaded to ' + fstream.path);
 
 
-    	});
+        });
     });
 });
 
