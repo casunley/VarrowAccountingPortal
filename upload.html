@@ -1,15 +1,22 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<title>Upload Example</title>
-	</head>
-	<body>
-		<form id="uploader"
-		      enctype="multipart/form-data"
-		      action="/upload"
-		      method="post">
-		  <input type="file" id="file" name="file" />
-		  <input type="submit" value="Upload">
-		</form>
-	</body>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Upload your file</title>
+	<link rel="stylesheet" href="normalize.css" />
+	<link rel="stylesheet" href="mystyle.css" />	
+</head>
+<body>
+<form class="group" action="/upload" method="post" enctype="multipart/form-data">
+	<ol>
+
+		<li class="group">
+			<label for="filefield">Upload a File</label>
+			<input type="file" name="uploads" id="filefield" required accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, .csv"/>
+		</li>
+
+	</ol>
+<input type="submit" value="Upload">
+</form>
+</body>
 </html>
