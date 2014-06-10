@@ -36,6 +36,8 @@ app.get('/success', function(request, response) {
     });
 });
 
+require("mystyle.css")(app);
+
 app.post('/upload',function(request, response) {
 	var fstream;
     request.pipe(request.busboy);
