@@ -42,7 +42,6 @@ app.get('/success', function (request, response) {
     });
 });
 
-//app.use("/styles", express.static(__dirname + '/styles'));
 
 app.post('/upload', function (request, response) {
     var fstream;
