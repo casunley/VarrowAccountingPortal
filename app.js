@@ -1,12 +1,10 @@
 /*  
- *    Super Easy File Uploader
- *   @author greed@varrow.com
- *   June 2014
  *   Use this to begin developing an understanding of the extraordinary powers of Node.js and ExpressJS!
  */
 var fs = require('fs');
 var express = require('express');
 var app = express();
+var excelParser = require('excel-parser');
 var busboy = require('connect-busboy');
 app.use(busboy());
 
@@ -60,4 +58,13 @@ app.post('/upload', function (request, response) {
 });
 
 
+
+excelParser.parse({
+    inFile: 'filepathhere',
+    worksheet: 1,
+    skipEmpty: true,
+}, function (err, records) {
+    if (err) console.error(err);
+    console.log(records);
+});
 
