@@ -3,17 +3,19 @@
  */
 var fs = require('fs');
 var express = require('express');
+var path = require('path');
 var app = express();
 var excelParser = require('excel-parser');
 var busboy = require('connect-busboy');
 app.use(busboy());
+app.use("/styles", express.static(__dirname + '/styles'));
 
-var port = 3000;
+var port = parseInt(process.env.PORT,10) || 3000;
 app.listen(port);
 console.log('Server listening on port ' + port);
 
 app.get('/', function (request, response) {
-    fs.readFile('upload.html', function (error, data) {
+    fs.readFile('public/upload.html', function (error, data) {
         if (error) {
             console.log(error);
         }
@@ -27,7 +29,7 @@ app.get('/', function (request, response) {
 });
 
 app.get('/success', function (request, response) {
-    fs.readFile('success.html', function (error, data) {
+    fs.readFile('public/success.html', function (error, data) {
         if (error) {
             console.log(error);
         }
