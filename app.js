@@ -14,6 +14,9 @@ var port = parseInt(process.env.PORT,10) || 3000;
 app.listen(port);
 console.log('Server listening on port ' + port);
 
+/*
+ * GET function used to point router to retrieve upload.html page and display it
+ */
 app.get('/', function (request, response) {
     fs.readFile('public/upload.html', function (error, data) {
         if (error) {
@@ -28,6 +31,9 @@ app.get('/', function (request, response) {
     });
 });
 
+/*
+ *  GET function used to point router to retrieve success.html page. 
+ */
 app.get('/success', function (request, response) {
     fs.readFile('public/success.html', function (error, data) {
         if (error) {
@@ -42,7 +48,10 @@ app.get('/success', function (request, response) {
     });
 });
 
-
+/*
+ * 
+ */
+var fullfile;
 app.post('/upload', function (request, response) {
     var fstream;
     request.pipe(request.busboy);
@@ -53,20 +62,25 @@ app.post('/upload', function (request, response) {
         fstream.on('close', function () {
             response.redirect('success');
             console.log('Uploaded to ' + fstream.path);
-
-
+            fullfile=fstream.path;
+            excelParser.parse({
+                inFile: fullfile,
+                skipEmpty: true,
+            }, function (err, records) {
+                if (err) console.error(err);
+                console.log(records);
+            });
         });
     });
 });
 
 
+/*
+ * -----Excel parser----- 
+ * Should parse through a specified excel spreadsheet and display its contents on the command prompt 
+ * inFile: Filepath of the source spreadhseet
+ * worksheet: worksheet name or ID to parse. 0 is default and will parse all worksheets
+ * skipEmpty: true or false. True if want to skip empty cells
+ */
 
-excelParser.parse({
-    inFile: 'filepathhere',
-    worksheet: 1,
-    skipEmpty: true,
-}, function (err, records) {
-    if (err) console.error(err);
-    console.log(records);
-});
 
