@@ -5,7 +5,7 @@ var fs = require('fs');
 var express = require('express');
 var path = require('path');
 var app = express();
-var excelParser = require('excel-parser');
+//var excelParser = require('excel-parser');
 var busboy = require('connect-busboy');
 app.use(busboy());
 app.use("/styles", express.static(__dirname + '/styles'));
@@ -49,7 +49,7 @@ app.get('/success', function (request, response) {
 });
 
 /*
- * 
+ * Create var called fullfile that holds filepath of uploaded excel file
  */
 var fullfile;
 app.post('/upload', function (request, response) {
@@ -63,24 +63,25 @@ app.post('/upload', function (request, response) {
             response.redirect('success');
             console.log('Uploaded to ' + fstream.path);
             fullfile=fstream.path;
+    /*
+    * -----Excel parser----- 
+    * Should parse through a specified excel spreadsheet and display its contents on the command prompt 
+    * inFile: Filepath of the source spreadhseet
+    * worksheet: worksheet name or ID to parse. 0 is default and will parse all worksheets
+    * skipEmpty: true or false. True if want to skip empty cells
+    
             excelParser.parse({
                 inFile: fullfile,
                 skipEmpty: true,
             }, function (err, records) {
                 if (err) console.error(err);
                 console.log(records);
-            });
+            });*/
         });
     });
 });
 
 
-/*
- * -----Excel parser----- 
- * Should parse through a specified excel spreadsheet and display its contents on the command prompt 
- * inFile: Filepath of the source spreadhseet
- * worksheet: worksheet name or ID to parse. 0 is default and will parse all worksheets
- * skipEmpty: true or false. True if want to skip empty cells
- */
+
 
 
