@@ -6,6 +6,7 @@ var express = require('express');
 var path = require('path');
 var app = express();
 var xlsx = require('node-xlsx');
+var builder = require('xmlbuilder');
 var busboy = require('connect-busboy');
 app.use(busboy());
 app.use("/styles", express.static(__dirname + '/styles'));
@@ -50,6 +51,7 @@ app.get('/success', function (request, response) {
 
 /*
  * Create var called fullfile that holds filepath of uploaded excel file
+ * HTTP post request
  */
 var fullfile;
 app.post('/upload', function (request, response) {
@@ -64,22 +66,65 @@ app.post('/upload', function (request, response) {
             console.log('Uploaded to ' + fstream.path);
             fullfile=path.join(__dirname, fstream.path);
             var obj = xlsx.parse(fullfile);
-            //console.log(obj);
+        
+            /* 
+             * Create variables for generating date (MM-DD-YYYY) in xml string
+             * 
+             */
+            var date = new Date();
+            var day = date.getDate();
+            var month = date.getMonth()+1;
+            var year = date.getFullYear();
+            var getDateTime = month + "-" + day + "-" + year;
+            console.log(getDateTime);
             
-            for (var i=0; i < obj.worksheets.length; i++){
-             
+                        
+                                                                           
+            //Will print out parsed excel sheet data
+            for (var i=0; i < obj.worksheets.length; i++)
+            {             
                 var myObj = obj.worksheets[i];
-                console.log(myObj.data);
-            }
+                console.log(myObj.data);               
+              }
             
-            //var arr = [];
-            //for(worksheet in obj.worksheets)
-            //{
-            //    arr.push(JSON.stringify(worksheet.data));
-                
-          //  }
-           // console.log(JSON.parse(worksheet.data));
-           
+            /*
+             * Creates static portion of XML sheet that will be pushed to Intacct and prints it
+             * to the console
+             */
+            var doc = builder.create('request', {'version': '1.0', 'encoding': 'UTF-8'});                   
+            var staticXML = {
+                '#list': [
+                            {
+                                control : {
+                                    'senderid': 'Varrow',
+                                    'password': 'KYloh3jU0W',
+                                    'controlid': 'Varrow',
+                                    'dtdversion': '2.1'
+                                        },
+            
+                                operation: {
+                                    authentication: {
+                                        login: {
+                                            'userid': 'dsgroup',
+                                            'companyid': 'Varrow',
+                                            'password': 'V@rrowDevTeam2014'
+                                                }
+                                            },
+                                    content: {
+                                        'function': {'controlid': 'Varrow'},
+                                        create_billbatch: {
+                                            'batchtitle': 'Conucur Batch Upload: ' + getDateTime
+                                     }
+                                  }
+                                }
+                            }
+                        ]
+                    };
+            
+            doc.ele(staticXML);
+            console.log(doc.toString({ pretty: true }));
+        
+    
         });
     });
 });
