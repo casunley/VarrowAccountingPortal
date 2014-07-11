@@ -91,7 +91,7 @@ app.post('/upload', function (request, response) {
              * Creates static portion of XML sheet that will be pushed to Intacct and prints it
              * to the console
              */
-            var doc = builder.create('request', {'version': '1.0', 'encoding': 'UTF-8'});                   
+            var page = builder.create('request', {'version': '1.0', 'encoding': 'UTF-8'});            
             var staticXML = {
                 '#list': [
                             {
@@ -110,10 +110,13 @@ app.post('/upload', function (request, response) {
                                             'password': 'V@rrowDevTeam2014'
                                                 }
                                             },
+                                    
                                     content: {
-                                        'function': {'controlid': 'Varrow'},
-                                        create_billbatch: {
+                                        'function': {
+                                            '@controlid': 'Varrow',
+                                            create_billbatch: {
                                             'batchtitle': 'Conucur Batch Upload: ' + getDateTime
+                                            }
                                      }
                                   }
                                 }
@@ -121,9 +124,56 @@ app.post('/upload', function (request, response) {
                         ]
                     };
             
-            doc.ele(staticXML);
-            console.log(doc.toString({ pretty: true }));
-        
+          
+            /*
+             *
+             *
+             */
+            var pageTwo = builder.create('create_bill', {'version': '1.0', 'encoding': 'UTF-8'});
+            var varrowEmployee = {
+                '#list': [
+                            {
+                                'vendorid': 'ID Here',
+                                datecreated: {
+                                    'year': 'Year Here',
+                                    'month': 'Month Here',
+                                    'day': 'Day Here'
+                                },
+                                datedue: {
+                                    'year': 'Year Here',
+                                    'month': 'Month Here', 
+                                    'day': 'Day Here'
+                                },
+                                'billno': 'Bill Number Here',
+                                'description': 'Description Here', 
+                                billitems: {
+                                    'lineitems': 'Line Item Here'
+                                }
+                            }
+                ]
+            };
+            
+            var pageThree = builder.create('lineitem', {'version': '1.0', 'encoding': 'UTF-8'});
+            var employeeLineItem = {
+                '#list': [
+                            {
+                                    'glaccountno': 'GL Account No Here',
+                                    'amount': 'Amount Here',
+                                    'memo': 'Memo Here',
+                                    'departmentid': 'Department Id Here'
+                            }
+                ]
+            };
+                        
+                                        
+                                        
+                                            
+            page.ele(staticXML);
+            pageTwo.ele(varrowEmployee);
+            pageThree.ele(employeeLineItem);
+            console.log(page.toString({ pretty: true }));
+            console.log(pageTwo.toString({pretty: true}));
+            console.log(pageThree.toString({pretty: true}));
     
         });
     });
