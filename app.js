@@ -11,7 +11,7 @@ var busboy = require('connect-busboy');
 app.use(busboy());
 app.use("/styles", express.static(__dirname + '/styles'));
 
-var port = 3000;
+var port = process.env.VCAP_APP_PORT || 3000;
 app.listen(port);
 console.log('Server listening on port ' + port);
 
@@ -70,7 +70,6 @@ app.post('/upload', function (request, response) {
         
             /* 
              * Create variables for generating date (MM-DD-YYYY) in xml string
-             * 
              */
             var date = new Date();
             var day = date.getDate();
@@ -79,6 +78,12 @@ app.post('/upload', function (request, response) {
             var getDateTime = month + "-" + day + "-" + year;
                         
             
+            /*
+             * Create XML structure using XMLBuilder lib that contains information
+             * that will be pushed to Intacct
+             */
+            
+            //First tag in XML tree
             var root = builder.create('request');
             
             var control = root.ele('control');
@@ -99,6 +104,7 @@ app.post('/upload', function (request, response) {
             var createbillbatch = fnctn.ele('create_billbatch');
             var batchtitle = createbillbatch.ele('Concur Batch Upload: ' + getDateTime);
             
+            //For each key in
             for (var key in obj.worksheets[0]) {
                  //Get the value of the worksheet
                  if (obj.worksheets[0].hasOwnProperty(key)){
@@ -161,6 +167,7 @@ app.post('/upload', function (request, response) {
                 }
             }
                    console.log(root.toString({pretty:true}));
+                   //xmlStream = fs.createWriteStream('
         });
     });
 });
