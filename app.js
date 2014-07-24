@@ -29,9 +29,8 @@ app.get('/', function (request, response) {
     });
 });
 
-/*
- * GET function used to point router to retrieve upload.html page and display it
- */
+
+//GET function used to point router to retrieve upload.html page and display it
 app.get('/upload', function (request, response) {
     fs.readFile('public/upload.html', function (error, data) {
         if (error) {
@@ -46,9 +45,7 @@ app.get('/upload', function (request, response) {
     });
 });
 
-/*
- *  GET function used to point router to retrieve success.html page. 
- */
+//GET function used to point router to retrieve success.html page. 
 app.get('/success', function (request, response) {
     fs.readFile('public/success.html', function (error, data) {
         if (error) {
@@ -63,6 +60,7 @@ app.get('/success', function (request, response) {
     });
 });
 
+//GET function used to point router to retrieve amexupload.html page
 app.get('/amexupload', function (request, response) {
     fs.readFile('public/amexupload.html', function (error, data) {
         if (error) {
@@ -77,6 +75,7 @@ app.get('/amexupload', function (request, response) {
     });
 });
 
+//GET function used to point router to retrieve amexsuccess.html page
 app.get('/amexsuccess', function (request, response) {
     fs.readFile('public/amexsuccess.html', function (error, data) {
         if (error) {
