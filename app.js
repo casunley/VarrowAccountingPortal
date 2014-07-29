@@ -8,6 +8,7 @@ var app = express();
 var xlsx = require('node-xlsx');
 var builder = require('xmlbuilder');
 var busboy = require('connect-busboy');
+var http = require('https');
 app.use(busboy());
 app.use("/styles", express.static(__dirname + '/styles'));
 
@@ -137,13 +138,13 @@ app.post('/upload', function (request, response) {
             var authentication = operation.ele('authentication');
             var login = authentication.ele('login');
             var userid = login.ele('userid', 'dsgroup');
-            var companyid = login.ele('companyid', 'Varrow');
+            var companyid = login.ele('companyid', 'Varrow-COPY');//Company is Varrow-COPY to access sandbox. Normally it is company id, Varrow
             var password = login.ele('password', 'V@rrowDevTeam2014');
             
             var content = operation.ele('content');
             var fnctn = content.ele('function').att('controlid', 'Varrow');
             var createbillbatch = fnctn.ele('create_billbatch');
-            var batchtitle = createbillbatch.ele('Concur Batch Upload: ' + getDateTime);
+            var batchtitle = createbillbatch.ele('batchtitle', 'Concur Batch Upload: ' + getDateTime);
             
             //For each key in
             for (var key in obj.worksheets[0]) {
@@ -165,14 +166,14 @@ app.post('/upload', function (request, response) {
                             var vendoridStr = row[1]['value'].toString();
                             var billnoStr = row[10]['value'].toString();
                             var descriptionStr = row[10]['value'].toString();
-                            var glaccountnoStr = row[2]['value'].toString(); + '-000';
+                            var glaccountnoStr = row[2]['value'].toString() + '-000';
                             var amountStr = row[3]['value'].toString();
                             var memoStr = row[4]['value'].toString() + ' : ' + row[6]['value'].toString();
                             var departmentidStr = row[7]['value'].toString();
                             
                             //If this is a new employee, create first set of items
                             if (empNames.indexOf(empNameStr)<0){
-                                createBill = batchtitle.ele('create_bill');
+                                createBill = createbillbatch.ele('create_bill');
                                 //Push the name onto empNames so that employee's are not duplicated
                                 empNames.push(empNameStr);
                                 
@@ -182,6 +183,11 @@ app.post('/upload', function (request, response) {
                                 datecreated.ele('year', year);
                                 datecreated.ele('month', month);
                                 datecreated.ele('day', day);
+                                
+                                var datedue = createBill.ele('datedue');
+                                datedue.ele('year', year);
+                                datedue.ele('month', month);
+                                datedue.ele('day', day);
                                 
                                 createBill.ele('billno', billnoStr);
                                 createBill.ele('description', descriptionStr);
@@ -208,7 +214,44 @@ app.post('/upload', function (request, response) {
                 }
             }
                    console.log(root.toString({pretty:true}));
-                   //xmlStream = fs.createWriteStream('
+                   var body = root.toString({pretty:true});
+            
+                var len = 0
+                var data = body.toString('utf8');
+                len = Buffer.byteLength(data);
+
+            
+            	var req = http.request({
+		          host: 'www.intacct.com',
+		          path: '/ia/xml/xmlgw.phtml',
+		          method: 'POST',	
+		          headers: {
+			     'Content-Type' : 'x-intacct-xml-request', 
+			     'Content-Length' : len
+		  }
+	   });
+            
+                // wire up events
+	           req.on('response', function(res){	
+		          console.log('STATUS: ' + res.statusCode);
+		          console.log('HTTP: ' + res.httpVersion);
+		          console.log('HEADER: ' + JSON.stringify(res.headers));
+		          res.setEncoding('utf8');
+		          console.log('BODY (multipart):\n');
+		          res.on('data', function (chunk) {
+			         console.log(chunk);
+                        });
+                    }).on('error', function(e) {
+		          console.error(e);		
+	           });
+
+	           // send data
+	           req.end(data,'utf8');		
+
+	           // output header and data read
+	           console.log(req._header);	
+	           console.log(data);            
+                   
         });
     });
 });
@@ -256,11 +299,11 @@ app.post('/amexupload', function (request, response) {
             var authentication = operation.ele('authentication');
             var login = authentication.ele('login');
             var userid = login.ele('userid', 'dsgroup');
-            var companyid = login.ele('companyid', 'Varrow');
+            var companyid = login.ele('companyid', 'Varrow-COPY');
             var password = login.ele('password', 'V@rrowDevTeam2014');
             
             var content = operation.ele('content');
-            var fnctn = content.ele('function').att('controlid', 'Varrow');
+            var fnctn = content.ele('function').att('controlid', 'Varrow');//Company is Varrow-COPY to access sandbox. Normally it is company id, Varrow
             var createbillbatch = fnctn.ele('create_billbatch');
             var batchtitle = createbillbatch.ele('Concur Amex Batch Upload: ' + getDateTime);
             
@@ -283,14 +326,14 @@ app.post('/amexupload', function (request, response) {
                             var empNameStr = row[0]['value'].toString();
                             var billnoStr = row[10]['value'].toString();
                             var descriptionStr = row[10]['value'].toString();
-                            var glaccountnoStr = row[2]['value'].toString(); + '-000';
+                            var glaccountnoStr = row[2]['value'].toString() + '-000';
                             var amountStr = row[3]['value'].toString();
                             var memoStr = row[4]['value'].toString() + ' : ' + row[6]['value'].toString();
                             var departmentidStr = row[7]['value'].toString();
                             
                             //If this is a new employee, create first set of items
                             if (empNames.indexOf(empNameStr)<0){
-                                createBill = batchtitle.ele('create_bill');
+                                createBill = createbillbatch.ele('create_bill');
                                 //Push the name onto empNames so that employee's are not duplicated
                                 empNames.push(empNameStr);
                                 
@@ -300,6 +343,11 @@ app.post('/amexupload', function (request, response) {
                                 datecreated.ele('year', year);
                                 datecreated.ele('month', month);
                                 datecreated.ele('day', day);
+                                
+                                var datedue = createBill.ele('datedue');
+                                datedue.ele('year', year);
+                                datedue.ele('month', month);
+                                datedue.ele('day', day);
                                 
                                 createBill.ele('billno', billnoStr);
                                 createBill.ele('description', descriptionStr);
@@ -326,7 +374,43 @@ app.post('/amexupload', function (request, response) {
                 }
             }
                    console.log(root.toString({pretty:true}));
-                   //xmlStream = fs.createWriteStream('
+                   var body = root.toString({pretty:true});
+            
+                var len = 0
+                var data = body.toString('utf8');
+                len = Buffer.byteLength(data);
+
+            
+            	var req = http.request({
+		          host: 'www.intacct.com',
+		          path: '/ia/xml/xmlgw.phtml',
+		          method: 'POST',	
+		          headers: {
+			     'Content-Type' : 'x-intacct-xml-request', 
+			     'Content-Length' : len
+		  }
+	   });
+            
+                // wire up events
+	           req.on('response', function(res){	
+		          console.log('STATUS: ' + res.statusCode);
+		          console.log('HTTP: ' + res.httpVersion);
+		          console.log('HEADER: ' + JSON.stringify(res.headers));
+		          res.setEncoding('utf8');
+		          console.log('BODY (multipart):\n');
+		          res.on('data', function (chunk) {
+			         console.log(chunk);
+                        });
+                    }).on('error', function(e) {
+		          console.error(e);		
+	           });
+
+	           // send data
+	           req.end(data,'utf8');		
+
+	           // output header and data read
+	           console.log(req._header);	
+	           console.log(data);      
         });
     });
 });
