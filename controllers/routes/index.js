@@ -4,6 +4,7 @@
  */
 
 var fs = require('fs'); 
+var chunk = require('../../app.js').chunk
 
 exports.landing = function (request, response) {
     fs.readFile('public/views/landing.html', function (error, data) {
@@ -38,6 +39,20 @@ exports.upload = function (request, response) {
 //GET function used to point router to retrieve success.html page. 
 exports.success = function (request, response) {
     fs.readFile('public/views/success.html', function (error, data) {
+        if (error) {
+            console.log(error);
+        }
+        response.writeHead(200, {
+            'Content-Type': 'text/html',
+            'Content-Length': data.length
+        });
+        response.write(data);
+        response.end();
+    });
+}
+
+exports.error = function (request, response) {
+    fs.readFile('public/views/error.html', function (error, data) {
         if (error) {
             console.log(error);
         }
