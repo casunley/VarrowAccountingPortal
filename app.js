@@ -165,6 +165,7 @@ app.post('/upload', function (request, response) {
             
                 
                 // wire up events
+            
 	           req.on('response', function(res){	
 		          console.log('STATUS: ' + res.statusCode);
 		          console.log('HTTP: ' + res.httpVersion);
@@ -174,7 +175,7 @@ app.post('/upload', function (request, response) {
 		          res.on('data', function (chunk) {
 			         console.log(chunk);//Chunk is the JSON object that will be written to HTML page upon error
                     });
-                   
+                   //setTimeout(function() {chunk}, 30000)//Want to hold serving redirect page until response from server has been received. 
                 
   
                 }).on('error', function(e) {
@@ -186,7 +187,8 @@ app.post('/upload', function (request, response) {
 
 	           // output header and data read
 	           console.log(req._header);	
-	           console.log(data);                         
+	           console.log(data); 
+            
         });
     });
 }); 
@@ -195,7 +197,7 @@ app.post('/upload', function (request, response) {
 
 
 /*
- * Create var called fullfile that holds filepath of uploaded excel file
+ * Create var called amexfullfile that holds filepath of uploaded excel file
  */
 
 
@@ -243,13 +245,13 @@ app.post('/amexupload', function (request, response) {
             var authentication = operation.ele('authentication');
             var login = authentication.ele('login');
             var userid = login.ele('userid', 'dsgroup');
-            var companyid = login.ele('companyid', 'Varrow-COPY');
+            var companyid = login.ele('companyid', 'Varrow-COPY');//Companyid is Varrow-COPY to access sandbox. Normally it is company id, Varrow
             var password = login.ele('password', 'V@rrowDevTeam2014');
             
             var content = operation.ele('content');
-            var fnctn = content.ele('function').att('controlid', 'Varrow');//Companyid is Varrow-COPY to access sandbox. Normally it is company id, Varrow
+            var fnctn = content.ele('function').att('controlid', 'Varrow');
             var createbillbatch = fnctn.ele('create_billbatch');
-            var batchtitle = createbillbatch.ele('Concur Amex Batch Upload: ' + getDateTime);
+            var batchtitle = createbillbatch.ele('batchtitle', 'Concur Amex Batch Upload: ' + getDateTime);
             
             //For each key in
             for (var key in obj.worksheets[0]) {
@@ -317,7 +319,7 @@ app.post('/amexupload', function (request, response) {
                     }
                 }
             }
-                   console.log(root.toString({pretty:true}));
+                   //console.log(root.toString({pretty:true}));
                    var body = root.toString({pretty:true});
             
                 var len = 0
