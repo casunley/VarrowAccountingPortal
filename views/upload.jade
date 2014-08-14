@@ -1,0 +1,12 @@
+extends layout
+
+block content
+    h1
+      | Employee Expenses Upload Page
+    form.group(action='/upload', method='post', enctype='multipart/form-data')
+      ol
+        li.group
+          label(for='filefield') Push Concur Expenses to Intacct: 
+          input#filefield(type='file', name='uploads', required='required', accept='application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, .csv')
+      input(type='submit', value='Upload')
+    a(href='/') Back To The Landing Page
