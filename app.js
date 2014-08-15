@@ -194,16 +194,15 @@ app.post('/upload', function(request, response) {
           console.log(chunk); //Chunk is the JSON object that will be written to HTML page upon error
           // Convert the chunk xml string to json using xml2js
           // Then stringify the result and parse it back into json to sanatize
-          // I hate this so much
           xmlToJs(chunk, function(err, result) {
-            chunkJson = JSON.stringify(result, null, 2);
-            console.log(chunkJson);
+            chunkJson = JSON.stringify(result);
+            //console.log(chunkJson);
             var chunkParsedJson = JSON.parse(chunkJson);
             uploadresult = JSON.stringify(chunkParsedJson['response']['operation'][0]['result'][0]['status'][0]);
             if (uploadresult == '\"failure\"') {
               response.render('error', {
                 title: 'Error!',
-                chunk: chunkJson
+                chunk: chunk
               });
             } else {
               response.render('success', {
