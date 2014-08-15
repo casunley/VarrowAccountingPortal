@@ -1,5 +1,6 @@
 /*  
- *   Logic behind excel upload, xml building, and page render, POST functionality in Varrow's Accounting Department Portal
+ *   Logic behind excel upload, xml building, and page render,
+ *   POST functionality in Varrow's Accounting Department Portal
  */
 var fs = require('fs');
 var express = require('express');
@@ -11,6 +12,7 @@ var busboy = require('connect-busboy');
 var http = require('https');
 var jade = require('jade');
 var bodyParser = require('body-parser');
+var xmlToJs = require('xml2js').parseString;
 app.use(busboy());
 
 //Jade Engine setup
@@ -31,37 +33,21 @@ app.get('/', function(request, response) {
     title: 'Accounting Landing Page',
   });
 });
-
 app.get('/upload', function(request, response) {
   response.render('upload', {
     title: 'Upload Employee Expenses',
   });
 });
-
-app.get('/success', function(request, response) {
-  response.render('success', {
-    title: 'Successful Upload',
-  });
-});
-
-app.get('/error', function(request, response) {
-  response.render('error', {
-    title: 'Error!',
-  });
-});
-
 app.get('/amexupload', function(request, response) {
   response.render('amexupload', {
     title: 'Upload Amex Expenses',
   });
 });
-
 app.get('/amexsuccess', function(request, response) {
   response.render('amexsuccess', {
     title: 'Successful Amex Upload',
   });
 });
-
 
 //fullfile stores the path where the excel sheets are stored after downloading
 var fullfile;
@@ -74,7 +60,6 @@ app.post('/upload', function(request, response) {
     fstream = fs.createWriteStream('./storedFiles/' + filename);
     file.pipe(fstream);
     fstream.on('close', function() {
-      response.redirect('error');
       console.log('Uploaded to ' + fstream.path);
       fullfile = path.join(__dirname, fstream.path);
       var obj = xlsx.parse(fullfile);
@@ -88,12 +73,10 @@ app.post('/upload', function(request, response) {
       var year = date.getFullYear();
       var getDateTime = month + "-" + day + "-" + year;
 
-
       /*
        * Create XML structure using XMLBuilder lib that contains information
        * that will be pushed to Intacct
        */
-
       //First tag in XML tree
       var root = builder.create('request');
 
@@ -200,7 +183,6 @@ app.post('/upload', function(request, response) {
           'Content-Length': len
         }
       });
-
       // wire up events            
       req.on('response', function(res) {
         console.log('STATUS: ' + res.statusCode);
@@ -210,19 +192,40 @@ app.post('/upload', function(request, response) {
         console.log('BODY (multipart):\n');
         res.on('data', function(chunk) {
           console.log(chunk); //Chunk is the JSON object that will be written to HTML page upon error
+          // Convert the chunk xml string to json using xml2js
+          // Then stringify the result and parse it back into json to sanatize
+          // I hate this so much
+          xmlToJs(chunk, function(err, result) {
+            chunkJson = JSON.stringify(result, null, 2);
+            console.log(chunkJson);
+            var chunkParsedJson = JSON.parse(chunkJson);
+            uploadresult = JSON.stringify(chunkParsedJson['response']['operation'][0]['result'][0]['status'][0]);
+            if (uploadresult == '\"failure\"') {
+              response.render('error', {
+                title: 'Error!',
+                chunk: chunkJson
+              });
+            } else {
+              response.render('success', {
+                title: 'Successful Upload',
+                chunk: chunk
+              })
+            }
+          });
         });
       }).on('error', function(e) {
         console.error(e);
+        theChunk += e;
+        success = false;
       });
-        // send data
-        req.end(data, 'utf8');
-
-        // output header and data read
-        console.log(req._header);
-        console.log(data);
-      });
+      // send data
+      req.end(data, 'utf8');
+      //output header and data read
+      console.log(req._header);
+      console.log(data);
     });
   });
+});
 
 
 /*

@@ -1,26 +1,29 @@
 {
-  "name": "SuperEZUploadz",
+  "name": "VarrowAccountingPortal",
   "version": "0.1.0",
-  "description": "Simple file uploader using expressjs 4 and busboy",
+  "description": "",
   "main": "app.js",
   "dependencies": {
     "express": ">= 4.*",
     "connect-busboy": "*",
-    "node-xlsx": "*"
+    "node-xlsx": "*",
+    "xmlbuilder": "*",
+    "jade": "*",
+    "body-parser": "*"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/forgreed/SuperEZUploadz.git"
+    "url": "https://github.com/casunley/File_Upload_JS.git"
   },
   "keywords": [
     "Node",
     "Express",
     "Busboy"
   ],
-  "author": "greed@varrow.com",
+  "author": "csunley@varrow.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/forgreed/SuperEZUploadz/issues"
+    "url": "https://github.com/casunley/File_Upload_JS/issues"
   },
-  "homepage": "https://github.com/forgreed/SuperEZUploadz"
+  "homepage": "https://github.com/casunley/File_Upload_JS"
 }
