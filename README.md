@@ -6,8 +6,9 @@
     3. Automatically create bills for expenses in Intacct Accounting Software
     4. At least for now!
     
- *npm install
- *type 'node app' in terminal
- *push expenses!
+### Directions:    
+ * npm install
+ * Type 'node app' in terminal
+ * Push Expenses with the click of a button!
 
 
