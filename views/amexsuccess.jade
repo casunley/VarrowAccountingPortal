@@ -1,10 +1,25 @@
 extends layout
 
 block content
-  body
     h1
       | Your Amex Expenses Have Been Pushed To Intacct
     p
       a(href='/amexupload') Upload More Amex Expenses
     p
       a(href='/') Back To The Landing Page
+    code= chunk
+    code= empNameStr
+    div
+      //style
+        table,th,td
+        {
+        border:1px solid black;
+        }
+      table
+        tr
+            th Employee Name
+            th Total Amount
+        tr
+            td EmployeeNameHere
+            td TotalAmountHere
+            
