@@ -207,7 +207,8 @@ app.post('/upload', function(request, response) {
             } else {
               response.render('success', {
                 title: 'Successful Upload',
-                chunk: chunk
+                chunk: chunk,
+                empName: empNameStr//EmpName strings hopefully  
               })
             }
           });
@@ -240,7 +241,6 @@ app.post('/amexupload', function(request, response) {
     fstream = fs.createWriteStream('./storedFiles/' + filename);
     file.pipe(fstream);
     fstream.on('close', function() {
-      response.redirect('amexsuccess');
       console.log('Uploaded to ' + fstream.path);
       amexfullfile = path.join(__dirname, fstream.path);
       var obj = xlsx.parse(amexfullfile);
@@ -273,7 +273,7 @@ app.post('/amexupload', function(request, response) {
       var authentication = operation.ele('authentication');
       var login = authentication.ele('login');
       var userid = login.ele('userid', 'dsgroup');
-      var companyid = login.ele('companyid', 'Varrow'); //Companyid is Varrow-COPY to access sandbox. Normally it is company id, Varrow
+      var companyid = login.ele('companyid', 'Varrow-COPY'); //Companyid is Varrow-COPY to access sandbox. Normally it is company id, Varrow
       var password = login.ele('password', 'V@rrowDevTeam2014');
 
       var content = operation.ele('content');
@@ -367,7 +367,7 @@ app.post('/amexupload', function(request, response) {
         }
       });
 
-      // wire up events
+      // wire up events            
       req.on('response', function(res) {
         console.log('STATUS: ' + res.statusCode);
         console.log('HTTP: ' + res.httpVersion);
@@ -375,16 +375,35 @@ app.post('/amexupload', function(request, response) {
         res.setEncoding('utf8');
         console.log('BODY (multipart):\n');
         res.on('data', function(chunk) {
-          console.log(chunk);
+          console.log(chunk); //Chunk is the JSON object that will be written to HTML page upon error
+          // Convert the chunk xml string to json using xml2js
+          // Then stringify the result and parse it back into json to sanatize
+          xmlToJs(chunk, function(err, result) {
+            chunkJson = JSON.stringify(result);
+            //console.log(chunkJson);
+            var chunkParsedJson = JSON.parse(chunkJson);
+            uploadresult = JSON.stringify(chunkParsedJson['response']['operation'][0]['result'][0]['status'][0]);
+            if (uploadresult == '\"failure\"') {
+              response.render('error', {
+                title: 'Error!',
+                chunk: chunk
+              });
+            } else {
+              response.render('amexsuccess', {
+                title: 'Successful Upload',
+                chunk: chunk
+              })
+            }
+          });
         });
       }).on('error', function(e) {
         console.error(e);
+        theChunk += e;
+        success = false;
       });
-
       // send data
       req.end(data, 'utf8');
-
-      // output header and data read
+      //output header and data read
       console.log(req._header);
       console.log(data);
     });
