@@ -1,51 +1,115 @@
-/*  
- *   Logic behind excel upload, xml building, and page render,
- *   POST functionality in Varrow's Accounting Department Portal
- */
-var fs = require('fs');
+// External Requirements
 var express = require('express');
 var path = require('path');
-var app = express();
+var bodyParser = require('body-parser');
+var jsforce = require('jsforce');
+var url = require('url');
+var fs = require('fs');
 var xlsx = require('node-xlsx');
 var builder = require('xmlbuilder');
-var busboy = require('connect-busboy');
 var http = require('https');
 var jade = require('jade');
-var bodyParser = require('body-parser');
 var xmlToJs = require('xml2js').parseString;
+var busboy = require('connect-busboy');
+
+// Create the app
+var app = express();
 app.use(busboy());
 
-//Jade Engine setup
+// Jade Engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(express.static(path.join(__dirname, 'public')));
 
-//Ports to listen on
-var port = process.env.VCAP_APP_PORT || 3000;
-app.listen(port);
-console.log('Server listening on port ' + port);
+// Set up the Oauth2 Info for jsforce
+var oauth2 = new jsforce.OAuth2({
+  clientId: '3MVG9VmVOCGHKYBSCAfWkFveQdwU4SOrIxxOMKuXxRGzaGOGgkkPBkazLRnoLZWf0NzbUEptPRzEbXlMydf2g',
+  clientSecret: '2686887070428587222',
+  redirectUri: 'http://localhost:8080/_auth'
+});
 
-//Routes to render Jade pages
-app.get('/', function(request, response) {
+// Create the connection using the Oauth2 Info
+var conn = new jsforce.Connection({
+  oauth2: oauth2
+});
+
+// Base URL redirects to authentication if not authorized
+// Otherwise, redirect to search page
+app.get('/', function(req, res) {
+   if (!conn.accessToken) {
+    res.redirect(oauth2.getAuthorizationUrl({
+      scope: 'api id web'
+    }));
+  }else {
+    res.redirect('/landing');
+  }
+});
+
+// Using jsforce, this redirects to Salesforce Oauth2 Page
+// Gets authorization code and authenticates the user
+app.get('/_auth', function(req, res) {
+  var code = req.param('code');
+  conn.authorize(code, function(err, userInfo) {
+    if (err) {
+      return console.error(err);
+      res.render('index', {
+        title: 'Could Not Connect!'
+      });
+    } else {
+      var user;
+      var queryString = ('SELECT Id, Name FROM User WHERE ' +
+        'Id = \'' + userInfo.id + '\' LIMIT 1');
+      conn.query(queryString)
+        .on("record", function(record) {
+          user = record;
+        })
+        .on("end", function(query) {
+          app.locals.auth = conn.accessToken;
+          app.locals.user = user.Name;
+          app.locals.userId = user.Id;
+          res.redirect('/search');
+        })
+        .on("error", function(err) {
+          console.error(err);
+        })
+        .run({
+          autoFetch: true,
+          maxFetch: 4000
+        });
+    }
+  });
+});
+
+app.get('/search', function(req, res) {
+  if (!conn.accessToken) {
+    res.redirect(oauth2.getAuthorizationUrl({
+      scope: 'api id web'
+    }));
+  } else {
+    res.render('search', {
+      title: 'Search for a Varrow SFDC account',
+    });
+  }
+  
+});
+
+app.get('/landing', function(request, response) {
   response.render('landing', {
     title: 'Accounting Landing Page',
   });
 });
+
 app.get('/upload', function(request, response) {
   response.render('upload', {
     title: 'Upload Employee Expenses',
   });
 });
+
 app.get('/amexupload', function(request, response) {
   response.render('amexupload', {
     title: 'Upload Amex Expenses',
-  });
-});
-app.get('/amexsuccess', function(request, response) {
-  response.render('amexsuccess', {
-    title: 'Successful Amex Upload',
   });
 });
 
@@ -197,10 +261,12 @@ app.post('/upload', function(request, response) {
           xmlToJs(chunk, function(err, result) {
             chunkJson = JSON.stringify(result);
             //console.log(chunkJson);
+            var parsedEmps = JSON.parse(JSON.stringify(empNames));
+            console.log(parsedEmps);
             var chunkParsedJson = JSON.parse(chunkJson);
             uploadresult = JSON.stringify(chunkParsedJson['response']['operation'][0]['result'][0]['status'][0]);
             if (uploadresult == '\"failure\"') {
-              response.render('error', {
+              response.render('errorpage', {
                 title: 'Error!',
                 chunk: chunk
               });
@@ -208,7 +274,7 @@ app.post('/upload', function(request, response) {
               response.render('success', {
                 title: 'Successful Upload',
                 chunk: chunk,
-                empName: empNameStr//EmpName strings hopefully  
+                empNames: empNames  
               })
             }
           });
@@ -227,10 +293,7 @@ app.post('/upload', function(request, response) {
   });
 });
 
-
-/*
- * Create var called amexfullfile that holds filepath of uploaded excel file
- */
+//Create var to hold filepath of uploaded excel sheet
 var amexfullfile;
 
 app.post('/amexupload', function(request, response) {
@@ -384,7 +447,7 @@ app.post('/amexupload', function(request, response) {
             var chunkParsedJson = JSON.parse(chunkJson);
             uploadresult = JSON.stringify(chunkParsedJson['response']['operation'][0]['result'][0]['status'][0]);
             if (uploadresult == '\"failure\"') {
-              response.render('error', {
+              response.render('errorpage', {
                 title: 'Error!',
                 chunk: chunk
               });
@@ -409,3 +472,96 @@ app.post('/amexupload', function(request, response) {
     });
   });
 });
+
+// Search results
+app.post('/search/results', function(req, res) {
+  var searchKey = req.param('searchKey');
+  console.log(searchKey);
+  var records = [];
+  var queryString = ('SELECT Id, Name FROM Account WHERE ' +
+    '(Name LIKE\'\%' + searchKey + '\%\' OR Name ' +
+    'LIKE\'\%' + searchKey + '\' OR Name LIKE \'' +
+    searchKey + '\%\') AND (NOT Name LIKE \'\%Leasing\%\')');
+  conn.query(queryString)
+    .on("record", function(record) {
+      records.push(record);
+    })
+    .on("end", function(query) {
+      console.log("total fetched : " + query.totalFetched);
+      res.render('results', {
+        title: query.totalFetched + ' Account Record(s) found for search: ' + searchKey,
+        records: records
+      });
+    })
+    .on("error", function(err) {
+      console.error(err);
+    })
+    .run({
+      autoFetch: true,
+      maxFetch: 4000
+    });
+});
+
+// Account Detail Page - Lots of Queries.
+app.get('/account-detail/:id', function(req, res) {
+  var id = req.param('id');
+  var account;
+  var salesReps = [];
+  var queryString1 = ('SELECT Id, Name, SalesRep__c FROM Account WHERE ' +
+    'Id = \'' + id + '\' LIMIT 1');
+  var queryString2 = ('select Id, Name, QuickBook_Initals__c, IsActive FROM User where QuickBook_Initals__c != \'\' and QuickBook_Initals__c != \'CJJ\' and IsActive = True order by Name');
+  conn.query(queryString1)
+    .on("record", function(record) {
+      account = record;
+    })
+    .on("end", function(query) {
+      console.log("Fetched: " + account.Name);
+      conn.query(queryString2)
+        .on("record", function(record) {
+          salesReps.push(record);
+        })
+        .on("end", function(query) {
+          console.log("Fetched: " + account.Name);
+          res.render('account-detail', {
+            title: 'Account Records',
+            account: account,
+            salesReps: salesReps
+          });
+        })
+        .on("error", function(err) {
+          console.error(err);
+        })
+        .run({
+          autoFetch: true,
+          maxFetch: 4000
+        });
+    })
+    .on("error", function(err) {
+      console.error(err);
+    })
+    .run({
+      autoFetch: true,
+      maxFetch: 4000
+    });
+});
+
+// Logout revokes the access token from the server and client
+app.get('/logout', function(req, res) {
+  conn.logout();
+  conn.accessToken = '';
+  res.render('index', {
+    title: 'Disconnected from Salesforce!',
+    auth: null
+  });
+});
+
+// Catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+// Start Listening!
+app.listen(8080);
+console.log('Express Server listening on port 8080');
