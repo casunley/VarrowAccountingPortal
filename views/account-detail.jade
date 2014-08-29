@@ -1,0 +1,38 @@
+extends layout
+
+block content
+  h1= account.Name
+  h2= account.Id
+  div
+    table
+      thead
+        tr
+          td AccountName
+          td= account.Name
+        tr
+          td Sales Rep
+          td 
+            each salesRep in salesReps
+              li= salesRep.Name
+        tr
+          td Items
+          td 
+        tr
+          td Revenue Amount($)
+          td
+        tr
+          td GM Amount($)
+          td
+        tr
+          td Booked Date
+          td 
+        tr
+          td Any Notes?
+          td
+        tr
+          td Job Number?
+          td 
+        tr
+          td Intacct Invoice Number?
+          td
+        

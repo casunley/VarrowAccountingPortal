@@ -1,26 +1,22 @@
 extends layout
 
 block content
-    h1
-      | Your Expenses Have Been Pushed To Intacct
-    p
-      a(href='/upload') Upload More Employee Expenses
-    p
-      a(href='/') Back To The Landing Page
-    code= chunk
-    code= empNameStr
-    div
-      //style
-        table,th,td
-        {
-        border:1px solid black;
-        }
-      table
-        tr
-            th Employee Name
-            th Total Amount
-        tr
-            td EmployeeNameHere
-            td TotalAmountHere
+  h1
+    | Your Expenses Have Been Pushed To Intacct
+  p
+    a(href='/upload') Upload More Employee Expenses
+  p
+    a(href='/') Back To The Landing Page
+  code= chunk
+  div
+    table
+      thead
+        tr 
+          th Employee Name
+          th Total Amount
+        tr           
+            each empNameStr in empNames
+              tr
+                td= empNameStr
+                td TotalAmountHere
             
- 

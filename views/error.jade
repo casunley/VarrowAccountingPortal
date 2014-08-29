@@ -1,19 +1,6 @@
 extends layout
 
 block content
-    h1
-      | ERROR! Expenses Have NOT Been Pushed
-    h2
-      | Please follow these directions:
-    ol
-      li Take a screenshot of this page
-      li Save the screenshot to your desktop
-      li
-        | Contact the dev team by attaching this screenshot to an email and sending it to dsgroup@varrow.com
-    p
-      a(href='/upload') Upload More Employee Expenses
-    p
-      a(href='/amexupload') Upload More Amex Expenses  
-    p
-      a(href='/') Back To The Landing Page
-    code= chunk
+  h1= message
+  h2= error.status
+  pre #{error.stack}

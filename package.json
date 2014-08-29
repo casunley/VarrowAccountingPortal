@@ -1,29 +1,19 @@
 {
-  "name": "VarrowAccountingPortal",
-  "version": "0.1.0",
-  "description": "",
-  "main": "app.js",
+  "name": "sfdc-express-app",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app"
+  },
   "dependencies": {
-    "express": ">= 4.*",
-    "connect-busboy": "*",
-    "node-xlsx": "*",
-    "xmlbuilder": "*",
-    "jade": "*",
-    "body-parser": "*"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/casunley/File_Upload_JS.git"
-  },
-  "keywords": [
-    "Node",
-    "Express",
-    "Busboy"
-  ],
-  "author": "csunley@varrow.com",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/casunley/File_Upload_JS/issues"
-  },
-  "homepage": "https://github.com/casunley/File_Upload_JS"
+    "express": "~4.2.0",
+    "static-favicon": "~1.0.0",
+    "morgan": "~1.0.0",
+    "cookie-parser": "~1.0.1",
+    "body-parser": "~1.0.0",
+    "debug": "~0.7.4",
+    "jade": "~1.3.0",
+    "jsforce": "*",
+    "mime": "1.2.*"
+  }
 }
