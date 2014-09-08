@@ -69,7 +69,7 @@ app.get('/_auth', function(req, res) {
           app.locals.auth = conn.accessToken;
           app.locals.user = user.Name;
           app.locals.userId = user.Id;
-          res.redirect('/search');
+          res.redirect('/landing');
         })
         .on("error", function(err) {
           console.error(err);
