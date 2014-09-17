@@ -154,7 +154,7 @@ app.post('/upload', function(request, response) {
       var authentication = operation.ele('authentication');
       var login = authentication.ele('login');
       var userid = login.ele('userid', 'dsgroup');
-      var companyid = login.ele('companyid', 'Varrow-COPY'); //Companyid is Varrow-COPY to access sandbox. Normally it is company id, Varrow
+      var companyid = login.ele('companyid', 'Varrow'); //Companyid is Varrow-COPY to access sandbox. Normally it is company id, Varrow
       var password = login.ele('password', 'V@rrowDevTeam2014');
 
       var content = operation.ele('content');
@@ -262,7 +262,7 @@ app.post('/upload', function(request, response) {
             chunkJson = JSON.stringify(result);
             //console.log(chunkJson);
             var parsedEmps = JSON.parse(JSON.stringify(empNames));
-            console.log(parsedEmps);
+            //console.log(parsedEmps);
             var chunkParsedJson = JSON.parse(chunkJson);
             uploadresult = JSON.stringify(chunkParsedJson['response']['operation'][0]['result'][0]['status'][0]);
             if (uploadresult == '\"failure\"') {
@@ -336,7 +336,7 @@ app.post('/amexupload', function(request, response) {
       var authentication = operation.ele('authentication');
       var login = authentication.ele('login');
       var userid = login.ele('userid', 'dsgroup');
-      var companyid = login.ele('companyid', 'Varrow-COPY'); //Companyid is Varrow-COPY to access sandbox. Normally it is company id, Varrow
+      var companyid = login.ele('companyid', 'Varrow'); //Companyid is Varrow-COPY to access sandbox. Normally it is company id, Varrow
       var password = login.ele('password', 'V@rrowDevTeam2014');
 
       var content = operation.ele('content');
@@ -507,9 +507,14 @@ app.get('/account-detail/:id', function(req, res) {
   var id = req.param('id');
   var account;
   var salesReps = [];
+  var products = [];
+  //SOQL query to find account names
   var queryString1 = ('SELECT Id, Name, SalesRep__c FROM Account WHERE ' +
     'Id = \'' + id + '\' LIMIT 1');
-  var queryString2 = ('select Id, Name, QuickBook_Initals__c, IsActive FROM User where QuickBook_Initals__c != \'\' and QuickBook_Initals__c != \'CJJ\' and IsActive = True order by Name');
+  //SOQL query to grab SalesReps
+  var queryString2 = ('SELECT Id, Name, QuickBook_Initals__c, IsActive FROM User where QuickBook_Initals__c != \'\' and QuickBook_Initals__c != \'CJJ\' and IsActive = True order by Name');
+  //SOQL query to find product names for manual entry products
+  var queryString3 = ('SELECT Id, Name FROM Product2 WHERE IsActive = true and Manual_Entry_Product__c = true');
   conn.query(queryString1)
     .on("record", function(record) {
       account = record;
@@ -522,11 +527,25 @@ app.get('/account-detail/:id', function(req, res) {
         })
         .on("end", function(query) {
           console.log("Fetched: " + account.Name);
-          res.render('account-detail', {
-            title: 'Account Records',
-            account: account,
-            salesReps: salesReps
-          });
+          conn.query(queryString3)
+            .on("record", function(record) {
+              products.push(record);
+            })
+            .on("end", function(query) {
+              res.render('account-detail', {
+                title: 'Account Records',
+                account: account,
+                salesReps: salesReps,
+                products: products
+              });  
+            })
+            .on("error", function(err) {
+              console.error(err);
+            })
+            .run({
+              autoFetch: true,
+              maxFetch: 4000
+            });
         })
         .on("error", function(err) {
           console.error(err);
@@ -556,12 +575,12 @@ app.get('/logout', function(req, res) {
 });
 
 // Catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
-});
+//app.use(function(req, res, next) {
+//  var err = new Error('Not Found');
+//  err.status = 404;
+//  next(err);
+//});
 
 // Start Listening!
-app.listen(8080);
+app.listen(process.env.VCAP_APP_PORT || 8080);
 console.log('Express Server listening on port 8080');
