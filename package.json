@@ -12,8 +12,7 @@
      "body-parser": "*",
      "xml2js": "*",
      "jsforce": "*",
-     "xlsx": "*",
-     
+     "xlsx": "*"     
    },
    "repository": {
      "type": "git",
