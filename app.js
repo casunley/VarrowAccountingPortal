@@ -26,7 +26,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Set up the Oauth2 Info for jsforce
 var oauth2 = new jsforce.OAuth2({
-  clientId: '3MVG9VmVOCGHKYBSCAfWkFveQdwU4SOrIxxOMKuXxRGzaGOGgkkPBkazLRnoLZWf0NzbUEptPRzEbXlMydf2g',
+  clientId: '3MVG9VmVOCGHKYBSCAfWkFveQd46yYq4q.TUhyGmHMsJRl1P7oxj2VxuKCnwjvsJ.PhdFsYJ.RKS_TPJKiq06',
   clientSecret: '903498451140392674',
   redirectUri: 'https://varrowacctportal.cfapps.io/_auth'
 });
@@ -157,7 +157,7 @@ app.post('/upload', function(request, response) {
       var authentication = operation.ele('authentication');
       var login = authentication.ele('login');
       var userid = login.ele('userid', 'dsgroup');
-      var companyid = login.ele('companyid', 'Varrow'); //Companyid is Varrow-COPY to access sandbox. Normally it is 'company id, Varrow'
+      var companyid = login.ele('companyid', 'Varrow-COPY'); //Companyid is Varrow-COPY to access sandbox. Normally it is 'company id, Varrow'
       var password = login.ele('password', 'V@rrowDevTeam2014');
 
       var content = operation.ele('content');
