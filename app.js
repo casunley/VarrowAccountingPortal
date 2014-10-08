@@ -27,8 +27,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Set up the Oauth2 Info for jsforce
 var oauth2 = new jsforce.OAuth2({
   clientId: '3MVG9VmVOCGHKYBSCAfWkFveQdwU4SOrIxxOMKuXxRGzaGOGgkkPBkazLRnoLZWf0NzbUEptPRzEbXlMydf2g',
-  clientSecret: '2686887070428587222',
-  redirectUri: 'http://localhost:8080/_auth'
+  clientSecret: '903498451140392674',
+  redirectUri: 'https://varrowacctportal.cfapps.io/_auth'
 });
 
 // Create the connection using the Oauth2 Info

@@ -1,3 +1,4 @@
 applications:
 - name: accountingportal
   memory: 512M
+  buildpack: https://github.com/cloudfoundry/heroku-buildpack-nodejs.git
