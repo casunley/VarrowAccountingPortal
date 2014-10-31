@@ -2,49 +2,53 @@ extends layout
 
 block content
   h1= account.Name
-  h2= account.Id
-  div
-    p Account Name: #{account.Name}
-    p Sales Rep:  
-      select
-        each salesRep in salesReps
-          option= salesRep.Name
+  //h2= account.Id
+  form(action='/submitForm' method='post')
+    div.input-group
+    |Account Name: 
+    input.form-control(type='object', name='accountname' value=account.Name readonly) 
+    div.input-group-btn
+    
+    |Sales Rep: 
+    select(name= 'salesrep')
+      each salesRep in salesReps
+        option= salesRep.Name
+    div.input-group-btn
+    
+    |Items: 
+    select(name= 'items')
+      each product in products
+        option= product.Name
+    div.input-group-btn
+    
+    |Revenue Amount($): 
+    input.form-control(type='number', placeholder='Revenue Amount($)' name='revenueamount')
+    div.input-group-btn
+    
+    |GM Amount($): 
+    input.form-control(type='number', placeholder='GM Amount($)' name='gmamount')
+    div.input-group-btn
+    
+    |Booked Date: 
+    input.form-control(type='date', placeholder='Booked Date' name='bookeddate')
+    div.input-group-btn
+    
+    |Any Notes?: 
+    input.form-control(type='text', placeholder='Any Notes?' name='anynotes')
+    div.input-group-btn
+    
+    |Job Number?: 
+    input.form-control(type='text', placeholder='Job Number?' name='jobnumber')
+    div.input-group-btn 
+    
+    |Intacct Invoice Number?: 
+    input.form-control(type='text', placeholder='Intacct Invoice Number?' name='intacctinvoicenumber')
+    div.input-group-btn
+        button.btn.btn-success(type='submit') Create Opportunity
+        
       
-    p Items: 
-      select
-        each product in products
-          option= product.Name
-
-    p 
-      form
-        | Revenue Amount($): 
-        input(type='number', name='revenueamount')
-
-    p 
-      form
-        | GM Amount($): 
-        input(type='number', name='gmamount')
       
-    p 
-      form
-        | Booked Date: 
-        input(type='date', name ='bookeddate')
+      
 
-    p 
-      form
-        | Any Notes?: 
-        input(type='text', name='anynotes')
-       
-    p 
-      form
-        | Job Number?: 
-        input(type='text', name='jobnumber')
-       
-    p 
-      form
-        | Intacct Invoice Number?: 
-        input(type='text', name='intacctinovicenumber')
-  div
-    input(type= 'submit', value='Create Opportunity')
        
         

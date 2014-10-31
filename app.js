@@ -5,7 +5,6 @@ var bodyParser = require('body-parser');
 var jsforce = require('jsforce');
 var url = require('url');
 var fs = require('fs');
-var xlsx = require('node-xlsx');
 if(typeof require!=='undefined') XLSX = require('xlsx');
 var builder = require('xmlbuilder');
 var http = require('https');
@@ -30,7 +29,6 @@ var oauth2 = new jsforce.OAuth2({
   clientSecret: '903498451140392674',
   redirectUri: 'https://varrowacctportal.cfapps.io/_auth'
 });
-
 // Create the connection using the Oauth2 Info
 var conn = new jsforce.Connection({
   oauth2: oauth2
@@ -127,9 +125,7 @@ app.post('/upload', function(request, response) {
     fstream.on('close', function() {
       console.log('Uploaded to ' + fstream.path);
       fullfile = path.join(__dirname, fstream.path);
-      var workbook = XLSX.readFile(fullfile);
-
-        
+      var workbook = XLSX.readFile(fullfile);   
 
       /* 
        * Create variables for generating date (MM-DD-YYYY) in xml string
@@ -157,7 +153,7 @@ app.post('/upload', function(request, response) {
       var authentication = operation.ele('authentication');
       var login = authentication.ele('login');
       var userid = login.ele('userid', 'dsgroup');
-      var companyid = login.ele('companyid', 'Varrow-COPY'); //Companyid is Varrow-COPY to access sandbox. Normally it is 'company id, Varrow'
+      var companyid = login.ele('companyid', 'Varrow'); //Companyid is Varrow-COPY to access sandbox. Normally it is 'company id, Varrow'
       var password = login.ele('password', 'V@rrowDevTeam2014');
 
       var content = operation.ele('content');
@@ -228,75 +224,6 @@ app.post('/upload', function(request, response) {
           //ENDTRNS in first cell of row. Do nothing
         }
       }
-      
-      //For each key in
-//      for (var key in obj.worksheets[0]) {
-//        //Get the value of the worksheet
-//        if (obj.worksheets[0].hasOwnProperty(key)) {
-//          var val = obj.worksheets[0][key];
-//          //Employee list for tracking duplicates
-//          var empNames = [];
-//          //Start loop at one to skip first row of headers
-//          for (var i = 1; i < val.length; i++) {
-//            //Row objects start here
-//            var row = val[i];
-//            var createBill;
-//
-//            //Check to see if empty object from excel parser
-//            if (row[0]['value'] != undefined) {
-//              //Items we need from excel parser
-//              var empNameStr = row[0]['value'].toString();
-//              var vendoridStr = row[1]['value'].toString();
-//              var billnoStr = row[10]['value'].toString();
-//              var descriptionStr = row[10]['value'].toString();
-//              var glaccountnoStr = row[2]['value'].toString() + '-000';
-//              var amountStr = row[3]['value'].toString();
-//              var memoStr = row[4]['value'].toString() + ' : ' + row[6]['value'].toString();
-//              var departmentidStr = row[7]['value'].toString();
-//
-//              //If this is a new employee, create first set of items
-//              if (empNames.indexOf(empNameStr) < 0) {
-//                createBill = createbillbatch.ele('create_bill');
-//                //Push the name onto empNames so that employee's are not duplicated
-//                empNames.push(empNameStr);
-//
-//                createBill.ele('vendorid', vendoridStr);
-//
-//                var datecreated = createBill.ele('datecreated');
-//                datecreated.ele('year', year);
-//                datecreated.ele('month', month);
-//                datecreated.ele('day', day);
-//
-//                var datedue = createBill.ele('datedue');
-//                datedue.ele('year', year);
-//                datedue.ele('month', month);
-//                datedue.ele('day', day);
-//
-//                createBill.ele('billno', billnoStr);
-//                createBill.ele('description', descriptionStr);
-//
-//                var billItems = createBill.ele('billitems');
-//                var lineItem = billItems.ele('lineitem');
-//                lineItem.ele('glaccountno', glaccountnoStr);
-//                lineItem.ele('amount', amountStr);
-//                lineItem.ele('memo', memoStr);
-//                lineItem.ele('departmentid', departmentidStr);
-//              }
-//              //If employee exists, only add additional line items
-//              else {
-//                var lineItem = billItems.ele('lineitem');
-//                lineItem.ele('glaccountno', glaccountnoStr);
-//                lineItem.ele('amount', amountStr);
-//                lineItem.ele('memo', memoStr);
-//                lineItem.ele('departmentid', departmentidStr);
-//              }
-//            } else {
-//              //Row did not contain valid data.
-//            }
-//          }
-//        }
-//      }
-
         
       //console.log(root.toString({pretty:true}));
       var body = root.toString({
@@ -593,7 +520,7 @@ app.get('/account-detail/:id', function(req, res) {
           salesReps.push(record);
         })
         .on("end", function(query) {
-          console.log("Fetched: " + account.Name);
+          console.log("Product List Fetched");
           conn.query(queryString3)
             .on("record", function(record) {
               products.push(record);
@@ -630,6 +557,166 @@ app.get('/account-detail/:id', function(req, res) {
       maxFetch: 4000
     });
 });
+
+//Logic for opportunity creation functionality
+app.post('/submitForm', function(req, res) {  
+  
+  var oppId;
+  var salesInvoiceId;
+  var accountFormKey = req.param('accountname');
+  var formKey1 = req.param('salesrep');
+  var formKey2 = req.param('items');
+  var formKey3 = req.param('revenueamount');
+  var formKey4 = req.param('gmamount');
+  var formKey5 = req.param('bookeddate');
+  var formKey6 = req.param('anynotes');
+  var formKey7 = req.param('jobnumber');
+  var formKey8 = req.param('intacctinvoicenumber');
+  var salesRepUserId;
+  var priceBookEntryId;
+  var accountId;
+  
+  //Query to grab SalesRep ID
+  var queryString4 = ('SELECT Id, Name, QuickBook_Initals__c, IsActive FROM User where QuickBook_Initals__c != \'\' and QuickBook_Initals__c != \'CJJ\' and IsActive = True and Name = ' + "'" + formKey1 + "'" +  ' LIMIT 1');
+
+//Query to grab PriceBookEntryId
+  var queryString5 = ('Select Id, Pricebook2Id, Product2Id, Name FROM PricebookEntry WHERE Name = ' + "'" + formKey2 + "'");
+
+//Query to grab Account Id
+  var queryString6 = ('Select Id, Name FROM Account WHERE Name = ' + "'" + accountFormKey + "'");
+
+  conn.query(queryString4)
+    .on("record", function(record) {
+      salesRepUserId = record.Id;
+    })
+    .on("end", function(query) {
+      console.log("SalesRepUserId: " + salesRepUserId);
+      conn.query(queryString5)
+        .on("record", function(record) {
+          priceBookEntryId = record.Id;      
+        })
+        .on("end", function(query) {
+          console.log("PriceBookEntryId: " + priceBookEntryId);
+          conn.query(queryString6)
+            .on("record", function(record) {
+              accountId = record.Id; 
+            })
+            .on("end", function(query) {
+              console.log("AccountId: " + accountId);
+              //Create Opportunity
+               conn.sobject("Opportunity").create({ 
+               Name : accountFormKey + "-" + formKey2, 
+               AccountId : accountId, 
+               CloseDate : formKey5, 
+               Amount : formKey3, 
+               StageName : 'Booked', 
+               OwnerId : salesRepUserId, 
+               Requires_Registration__c : 'No', 
+               Pricebook2Id : '01s700000002jcJAAQ',
+               Job__c : formKey7 + "-MANUAL_ENTRY"}, function(err, ret) {
+             if (err || !ret.success) { return console.error(err, ret); }
+             //Save opp id hopefully  
+             oppId = ret.id;
+             console.log("Created Opp id : " + ret.id);
+               
+               //Create OpportunityLineItem
+                conn.sobject("OpportunityLineItem").create({
+               OpportunityId : oppId,
+               Description : accountFormKey + "-" + formKey2,
+               Quantity : '1.0',
+               Markup__c : formKey4,
+               TotalPrice : formKey3,
+               PriceBookEntryId : priceBookEntryId}, function(err, ret) {
+             if (err || !ret.success) {return console.error(err,ret); }
+               console.log("Created OppLineItem id : " + ret.id);
+             });
+               
+               //Create Sales Invoice, IF there is an Intacct Invoice Number assign to Name
+            if(formKey8 !== '') {
+             conn.sobject("Sales_Invoice__c").create({
+               Account__c : accountId,
+               Opportunity__c : oppId,
+               Total__c : formKey3,
+               Date__c : formKey5,
+               Name : formKey8}, function(err, ret) {
+             if (err || !ret.success) {return console.error(err, ret); }
+               salesInvoiceId = ret.id;
+               console.log("Created Sales Invoice id : " + ret.id)
+                  
+               //Create Sales Invoice Item
+                 conn.sobject("Sales_Invoice_Item__c").create({
+               Item__c : formKey2,
+               Sales_Invoice__c : salesInvoiceId,
+               Opportunity__c : oppId,
+               Memo__c : formKey2,
+               Name : '0',
+               Quantity__c : '1.0',
+               Extended_Price__c : formKey3,
+               Extended_Cost__c : '0.',
+               Unit_Cost__c : '0.',
+               Price__c : formKey3}, function(err, ret) {
+             if(err || !ret.success) {return console.error(err, ret); }
+               console.log("Created Sales Invoice Line Item id : " + ret.id)
+               });
+             });
+            }
+            else{
+             //Create Sales Invoice, IF there is no Intacct Invoice Number, assign other stuff to Name
+             conn.sobject("Sales_Invoice__c").create({
+               Account__c : accountId,
+               Opportunity__c : oppId,
+               Total__c : formKey3,
+               Date__c : formKey5,
+               Name : accountFormKey + "-" + formKey2}, function(err, ret) {
+             if (err || !ret.success) {return console.error(err, ret); }
+               salesInvoiceId = ret.id;
+               console.log("Created Sales Invoice id : " + ret.id)
+               
+               //Create Sales Invoice Item
+                 conn.sobject("Sales_Invoice_Item__c").create({
+               Item__c : formKey2,
+               Sales_Invoice__c : salesInvoiceId,
+               Opportunity__c : oppId,
+               Memo__c : formKey2,
+               Name : '0',
+               Quantity__c : '1.0',
+               Extended_Price__c : formKey3,
+               Extended_Cost__c : '0.',
+               Unit_Cost__c : '0.',
+               Price__c : formKey3}, function(err, ret) {
+             if(err || !ret.success) {return console.error(err, ret); }
+               console.log("Created Sales Invoice Line Item id : " + ret.id)
+               });
+             });
+            }
+             });
+            })
+            .on("error", function(err) {
+              console.error(err);
+            })
+            .run({
+              autoFetch: true,
+              maxFetch: 4000
+            });
+        })
+        .on("error", function(err) {
+          console.error(err);
+        })
+        .run({
+          autoFetch: true,
+          maxFetch: 4000
+        });
+    })
+    .on("error", function(err) {
+      console.error(err);
+    })
+    .run({
+      autoFetch: true,
+      maxFetch: 4000
+    }); 
+res.end();
+});
+
 
 // Logout revokes the access token from the server and client
 app.get('/logout', function(req, res) {
